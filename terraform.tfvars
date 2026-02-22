@@ -1,0 +1,10 @@
+esxi_host    = "192.168.1.29"
+esxi_user    = "root"
+esxi_password = "Julesarmstrong@1234"
+datastore    = "DATASTORE"
+network      = "VM Network"
+vm_name      = "ubuntu-vm"
+vm_cpus      = 2
+vm_memory    = 2048
+vm_disk_size = 40
+ova_path     = "C:\\Users\\LENOVO\\Documents\\terraform\\ubuntu-22.04-server-cloudimg-amd64.ova"
