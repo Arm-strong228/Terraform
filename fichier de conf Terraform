@@ -1,0 +1,131 @@
+esxi_host    = "192.168.1.29"
+esxi_user    = "root"
+esxi_password = "Julesarmstrong@1234"
+datastore    = "DATASTORE"
+network      = "VM Network"
+vm_name      = "ubuntu-vm"
+vm_cpus      = 2
+vm_memory    = 2048
+vm_disk_size = 40
+ova_path     = "C:\\Users\\LENOVO\\Documents\\terraform\\ubuntu-22.04-server-cloudimg-amd64.ova"
+
+
+variables.tf
+variable "esxi_host" {
+  description = "IP ou FQDN de l'hôte ESXi"
+  type        = string
+}
+
+variable "esxi_user" {
+  description = "Utilisateur ESXi (root)"
+  type        = string
+  default     = "root"
+}
+
+variable "esxi_password" {
+  description = "Mot de passe ESXi"
+  type        = string
+  sensitive   = true
+}
+
+variable "vm_name" {
+  description = "Nom de la VM"
+  type        = string
+  default     = "ubuntu-vm"
+}
+
+variable "vm_cpus" {
+  type    = number
+  default = 2
+}
+
+variable "vm_memory" {
+  description = "RAM en MB"
+  type        = number
+  default     = 2048
+}
+
+variable "vm_disk_size" {
+  description = "Taille disque en GB"
+  type        = number
+  default     = 40
+}
+
+variable "datastore" {
+  description = "Nom du datastore ESXi"
+  type        = string
+  default     = "DATASTORE"
+}
+
+variable "network" {
+  description = "Nom du portgroup réseau"
+  type        = string
+  default     = "VM Network"
+}
+
+variable "ova_path" {
+  description = "Chemin local vers le fichier OVA Ubuntu"
+  type        = string
+}
+
+provider.tf
+terraform {
+  required_providers {
+    esxi = {
+      source  = "josenk/esxi"
+      version = "~> 1.10"
+    }
+  }
+}
+
+provider "esxi" {
+  esxi_hostname = var.esxi_host
+  esxi_hostport = "22"
+  esxi_hostssl  = "443"
+  esxi_username = var.esxi_user
+  esxi_password = var.esxi_password
+}
+
+
+cloud-init/ metadat.yaml
+instance-id: ubuntu-vm
+local-hostname: ubuntu-vm
+network:
+  version: 2
+  ethernets:
+    ens192:
+      addresses:
+        - 192.168.1.50/24
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8]
+
+userdata.yaml cloud-init
+#cloud-config
+hostname: ubuntu-vm
+timezone: Europe/Paris
+locale: fr_FR.UTF-8
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: $6$rounds=4096$VL7eNCtNgXoLHPzm$j3NmF6ei2rxkJliOC.pOSnQtClw1d.fuljqIEFcF0pN12EFHZ/ZpwBdxxA6YxeacHlSg00G2r/5vdmfOHoDa//   # généré avec mkpasswd
+
+    
+ssh_pwauth: true
+    
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - vim
+  - curl
+  - net-tools
+  - openssh-server
+
+runcmd:
+  - systemctl enable ssh
+  - systemctl start ssh
